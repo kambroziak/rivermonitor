@@ -41,42 +41,42 @@ public class ExportToGoogleTimer {
         HydroStation ujscie = hydroStationRepository.findByName("UJŚCIE");
 
         TreeMap<LocalDate, List<HydroStationAvarageState>> treeMap =
-                new TreeMap<>(
-                        (LocalDate o1, LocalDate o2) -> o1.compareTo(o2));
+                new TreeMap<>((o1, o2) -> o1.compareTo(o2));
 
         treeMap.putAll(avarageStateRepository.findByExportedAndHydroStationOrderByDay(false, czarnkow, ujscie)
                 .stream()
                 .collect(Collectors.groupingBy(state -> state.getDay())));
 
-        treeMap.entrySet()
-                .forEach(entry -> {
-                    try {
-                        List<HydroStationAvarageState> values =
-                                entry.getValue();
+        treeMap.entrySet().forEach(entry -> {
+            try {
+                exportData(entry);
+            } catch (IOException e) {
+                logger.error("Exception exporting data ", e);
+            }
+        });
 
-                        Collections.sort(values,(o1,o2)->o1
-                        .getHydroStation().getName().compareTo(o2.getHydroStation()
-                                .getName()));
+    }
 
+    private void exportData(Map.Entry<LocalDate, List<HydroStationAvarageState>> entry) throws IOException {
+        List<HydroStationAvarageState> values =
+                entry.getValue();
 
-                        Optional<HydroStationAvarageState> valueCzarnkow = values.isEmpty() ?
-                                Optional.empty() : Optional.of(values.get(0));
-
-                        Optional<HydroStationAvarageState> valueUjscie = values.size() < 2 ?
-                                Optional.empty() : Optional.of(values.get(1));
-
-                        googleConnectorFacade.export(entry.getKey(),
-                                valueCzarnkow, valueUjscie);
-
-                        values.stream().forEach(value -> {
-                            value.setExported(true);
-                            avarageStateRepository.save(value);
-                        });
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
+        Collections.sort(values, (o1, o2) -> o1
+                .getHydroStation().getName().compareTo(o2.getHydroStation()
+                        .getName()));
 
 
+        Optional<HydroStationAvarageState> valueCzarnkow = values.isEmpty() ?
+                Optional.empty() : Optional.of(values.get(0));
+
+        Optional<HydroStationAvarageState> valueUjscie = values.size() < 2 ?
+                Optional.empty() : Optional.of(values.get(1));
+
+        googleConnectorFacade.export(entry.getKey(), valueCzarnkow, valueUjscie);
+
+        values.stream().forEach(value -> {
+            value.setExported(true);
+            avarageStateRepository.save(value);
+        });
     }
 }
