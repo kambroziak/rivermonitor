@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @Component
 public class ExportToGoogleTimer {
 
-    private static final int ONE_DAY = 1000 * 60 * 60 * 6;
+    private static final int THREE_HOUR = 1000 * 60 * 60 * 3;
 
     private static final Logger logger = Logger.getLogger(ExportToGoogleTimer.class);
 
@@ -34,7 +34,7 @@ public class ExportToGoogleTimer {
     @Autowired
     private HydroStationRepository hydroStationRepository;
 
-    @Scheduled(fixedDelay = ONE_DAY)
+    @Scheduled(fixedDelay = THREE_HOUR)
     public void run() throws Exception {
         logger.info("Exporting to google");
         HydroStation czarnkow = hydroStationRepository.findByName("CZARNKÓW");

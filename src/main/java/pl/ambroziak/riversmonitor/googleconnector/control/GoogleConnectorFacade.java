@@ -123,6 +123,4 @@ public class GoogleConnectorFacade {
 
         service.scripts().run(SRIPT_ID, request).execute();
     }
-
-
 }
