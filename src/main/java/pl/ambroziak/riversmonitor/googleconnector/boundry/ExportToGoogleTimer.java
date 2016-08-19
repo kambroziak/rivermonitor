@@ -40,12 +40,10 @@ public class ExportToGoogleTimer {
         HydroStation czarnkow = hydroStationRepository.findByName("CZARNKÓW");
         HydroStation ujscie = hydroStationRepository.findByName("UJŚCIE");
 
-        TreeMap<LocalDate, List<HydroStationAvarageState>> treeMap =
+        Map<LocalDate, List<HydroStationAvarageState>> treeMap =
                 new TreeMap<>((o1, o2) -> o1.compareTo(o2));
 
-        treeMap.putAll(avarageStateRepository.findByExportedAndHydroStationOrderByDay(false, czarnkow, ujscie)
-                .stream()
-                .collect(Collectors.groupingBy(state -> state.getDay())));
+        treeMap.putAll(getAvarageStationData(czarnkow, ujscie));
 
         treeMap.entrySet().forEach(entry -> {
             try {
@@ -55,6 +53,12 @@ public class ExportToGoogleTimer {
             }
         });
 
+    }
+
+    private Map<LocalDate, List<HydroStationAvarageState>> getAvarageStationData(HydroStation czarnkow, HydroStation ujscie) {
+        return avarageStateRepository.findByExportedAndHydroStationOrderByDay(false, czarnkow, ujscie)
+                .stream()
+                .collect(Collectors.groupingBy(state -> state.getDay()));
     }
 
     private void exportData(Map.Entry<LocalDate, List<HydroStationAvarageState>> entry) throws IOException {
